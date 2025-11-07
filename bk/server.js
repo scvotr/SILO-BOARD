@@ -4,6 +4,7 @@ const http = require("http");
 const { serverErrorHandler } = require("./serverErrorHandler");
 const { logger } = require("./utils/logger");
 const config = require("./config");
+const { socketManager } = require("./socket/socketManager");
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
@@ -11,6 +12,7 @@ const server = http.createServer((req, res) => {
 });
 
 const { host, port } = config.server;
+const io = socketManager.initSocket(server)
 
 const startServer = async () => {
   return new Promise((resolve, reject) => {
