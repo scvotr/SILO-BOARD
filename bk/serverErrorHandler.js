@@ -1,5 +1,7 @@
 "use strict";
 
+const { logger } = require("./utils/logger");
+
 const errorHandlers = {
   EADDRINUSE: (error, port, host) => ({
     message: `❌ Port ${port} is already in use!`,
@@ -42,12 +44,19 @@ const serverErrorHandler = (error, port, host) => {
 
   if (handler) {
     const result = handler(error, port, host);
-    console.error(result.message);
-    console.error("💡 Solution:", result.solution);
+    logger.error(`Server error: ${error.code}`, {
+      port,
+      host,
+      error: error.message,
+    });
     process.exit(result.exitCode);
   } else {
-    // Default case
-    console.error("❌ Failed to start server:", error.message);
+    logger.error("Unknown server error:", {
+      errorCode: error.code,
+      errorMessage: error.message,
+      port,
+      host,
+    });
     process.exit(1);
   }
 };
