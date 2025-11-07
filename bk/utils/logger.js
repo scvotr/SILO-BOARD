@@ -2,6 +2,25 @@
 
 const winston = require("winston");
 
+/**
+ * Кастомные уровни логирования
+ * @namespace
+ * @property {Object} levels - Уровни логирования (0 - высший приоритет)
+ * @property {number} levels.error - Критические ошибки (0)
+ * @property {number} levels.warn - Предупреждения (1)
+ * @property {number} levels.info - Информационные сообщения (2)
+ * @property {number} levels.infoAuth - Успешная аутентификация (3)
+ * @property {number} levels.warnAuth - Подозрительная активность (4)
+ * @property {number} levels.errorAuth - Ошибки аутентификации (5)
+ * @property {Object} colors - Цвета для консоли
+ * @property {string} colors.error - 🔴 Красный для ошибок
+ * @property {string} colors.warn - 🟡 Желтый для предупреждений
+ * @property {string} colors.info - 🟢 Зеленый для информации
+ * @property {string} colors.infoAuth - 🔵 Синий для аутентификации
+ * @property {string} colors.warnAuth - 🟠 Оранжевый для предупреждений аутентификации
+ * @property {string} colors.errorAuth - 🟣 Пурпурный для ошибок аутентификации
+ */
+
 const customLevels = {
   levels: {
     error: 0,
@@ -22,7 +41,11 @@ const customLevels = {
 };
 
 winston.addColors(customLevels.colors);
-
+/**
+ * Основной логгер приложения
+ * @class
+ * @type {winston.Logger}
+ */
 const logger = winston.createLogger({
   levels: customLevels.levels,
   // Убираем конфликтующие форматы
@@ -34,7 +57,10 @@ const logger = winston.createLogger({
     winston.format.json() // Либо JSON, либо простой текст - выбираем один
   ),
   transports: [
-    // Для консоли - красивый цветной вывод
+    /**
+     * Транспорт для консоли - цветной вывод
+     * @type {winston.transports.Console}
+     */
     new winston.transports.Console({
       level: "info",
       format: winston.format.combine(
@@ -47,7 +73,10 @@ const logger = winston.createLogger({
         )
       ),
     }),
-    // Для файлов - структурированный JSON
+    /**
+     * Транспорт для файла ошибок
+     * @type {winston.transports.File}
+     */
     new winston.transports.File({
       filename: "logs/error.log",
       level: "error",
@@ -56,6 +85,10 @@ const logger = winston.createLogger({
         winston.format.json()
       ),
     }),
+    /**
+     * Транспорт для ошибок аутентификации
+     * @type {winston.transports.File}
+     */
     new winston.transports.File({
       filename: "logs/errorAuth.log",
       level: "errorAuth",
@@ -64,6 +97,10 @@ const logger = winston.createLogger({
         winston.format.json()
       ),
     }),
+    /**
+     * Транспорт для предупреждений аутентификации
+     * @type {winston.transports.File}
+     */
     new winston.transports.File({
       filename: "logs/warnAuth.log",
       level: "warnAuth",
@@ -72,6 +109,10 @@ const logger = winston.createLogger({
         winston.format.json()
       ),
     }),
+    /**
+     * Транспорт для всех логов
+     * @type {winston.transports.File}
+     */
     new winston.transports.File({
       filename: "logs/combined.log",
       format: winston.format.combine(
