@@ -18,8 +18,7 @@ const startServer = async () => {
       .listen({ host, port })
       .on("listening", () => {
         const address = server.address();
-        const message = `Сервер запущен на адресе ${address.address}:${address.port}`;
-        logger.info(message);
+        logger.info(`Сервер запущен на адресе ${address.address}:${address.port}`)
         resolve();
       })
       .on("error", (error) => {
