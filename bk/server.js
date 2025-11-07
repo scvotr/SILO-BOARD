@@ -5,6 +5,7 @@ const { serverErrorHandler } = require("./serverErrorHandler");
 const { logger } = require("./utils/logger");
 const config = require("./config");
 const { socketManager } = require("./socket/socketManager");
+const { socketEngine } = require("./socket/socketEngine");
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
@@ -12,7 +13,6 @@ const server = http.createServer((req, res) => {
 });
 
 const { host, port } = config.server;
-const io = socketManager.initSocket(server)
 
 const startServer = async () => {
   return new Promise((resolve, reject) => {
@@ -23,6 +23,13 @@ const startServer = async () => {
         logger.info(
           `Сервер запущен на адресе ${address.address}:${address.port}`
         );
+        try {
+          const io = socketManager.initSocket(server);
+          socketEngine(io);
+          logger.info("Socket.IO engine initialized successfully");
+        } catch (error) {
+          logger.error("Socket initialization failed:", error);
+        }
         resolve();
       })
       .on("error", (error) => {
