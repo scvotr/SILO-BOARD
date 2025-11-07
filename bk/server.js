@@ -8,8 +8,18 @@ const { socketManager } = require("./socket/socketManager");
 const { socketEngine } = require("./socket/socketEngine");
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Hello World!");
+  if (req.url === "/stats" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        server: "running",
+        sockets: socketManager.getStats(),
+      })
+    );
+  } else {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Hello World!");
+  }
 });
 
 const { host, port } = config.server;
