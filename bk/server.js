@@ -6,6 +6,7 @@ const { logger } = require("./utils/logger");
 const config = require("./config");
 const { socketManager } = require("./socket/socketManager");
 const { socketEngine } = require("./socket/socketEngine");
+const { initDatabase } = require("./database/sqlite3/initDatabase");
 
 const server = http.createServer((req, res) => {
   if (req.url === "/stats" && req.method === "GET") {
@@ -25,6 +26,11 @@ const server = http.createServer((req, res) => {
 const { host, port } = config.server;
 
 const startServer = async () => {
+  // ИНИЦИАЛИЗИРУЕМ БАЗУ ДАННЫХ ПЕРВОЙ
+  const dbInitialized = await initDatabase();
+  if (!dbInitialized) {
+    throw new Error("Database initialization failed");
+  }
   return new Promise((resolve, reject) => {
     server
       .listen({ host, port })
