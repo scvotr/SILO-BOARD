@@ -1,5 +1,6 @@
+const { logger } = require("../../../utils/logger");
 const { db } = require("../initDatabase");
-const { logger } = require("../../utils/logger");
+
 
 const closeDatabase = () => {
   return new Promise((resolve, reject) => {
@@ -8,7 +9,7 @@ const closeDatabase = () => {
         logger.error("Error closing database:", err);
         reject(err);
       } else {
-        logger.info("Database connection closed");
+        // logger.info("Database connection closed");
         resolve();
       }
     });

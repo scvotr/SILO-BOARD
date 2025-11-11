@@ -7,6 +7,7 @@ const config = require("./config");
 const { socketManager } = require("./socket/socketManager");
 const { socketEngine } = require("./socket/socketEngine");
 const { initDatabase } = require("./database/sqlite3/initDatabase");
+const { setupGracefulShutdown } = require("./gracefulShutdown");
 
 const server = http.createServer((req, res) => {
   if (req.url === "/stats" && req.method === "GET") {
@@ -44,10 +45,14 @@ const startServer = async () => {
           const io = socketManager.initSocket(server);
           socketEngine(io);
           logger.info("Socket.IO engine initialized successfully");
+          // ✅ НАСТРАИВАЕМ GRACEFUL SHUTDOWN ПОСЛЕ УСПЕШНОГО ЗАПУСКА
+          setupGracefulShutdown(server, io);
+          resolve(); // ✅ Успех только после инициализации сокетов
         } catch (error) {
           logger.error("Socket initialization failed:", error);
+          server.close();
+          reject(new Error("Socket.IO initialization failed")); // ✅ Пробрасываем ошибку
         }
-        resolve();
       })
       .on("error", (error) => {
         logger.error("Server startup error:", error);
