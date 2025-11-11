@@ -26,11 +26,12 @@ const server = http.createServer((req, res) => {
 const { host, port } = config.server;
 
 const startServer = async () => {
-  // ИНИЦИАЛИЗИРУЕМ БАЗУ ДАННЫХ ПЕРВОЙ
-  const dbInitialized = await initDatabase();
-  if (!dbInitialized) {
+  // ИНИЦИАЛИЗИРУЕМ БАЗУ ДАННЫХ
+  const dbSuccess = await initDatabase();
+  if (!dbSuccess) {
     throw new Error("Database initialization failed");
   }
+
   return new Promise((resolve, reject) => {
     server
       .listen({ host, port })
