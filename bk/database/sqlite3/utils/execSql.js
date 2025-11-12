@@ -1,21 +1,40 @@
 "use strict";
 
+const { logger } = require("../../../utils/logger");
 const { db } = require("../initDatabase");
-const { logger } = require("../../utils/logger");
+const { validateSqlCommand } = require("./validateSqlCommand");
 
 // ✅ ИСПОЛЬЗУЕМ СУЩЕСТВУЮЩЕЕ СОЕДИНЕНИЕ, не создаем новое
 const execSql = async (command, params = [], method = "all") => {
   return new Promise((resolve, reject) => {
-    // ✅ Используем существующее соединение db
-    db[method](command, params, (err, result) => {
-      if (err) {
-        logger.error(`Error executing query: ${command}`, err);
-        reject(err);
-      } else {
-        resolve(result);
+    try {
+      // ✅ ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ
+      if (!db) {
+        return reject(new Error("Database connection not available"));
       }
-      // ❌ НЕ закрываем соединение здесь!
-    });
+
+      if (!["all", "get", "run"].includes(method)) {
+        return reject(
+          new Error(`Invalid method: ${method}. Use 'all', 'get', or 'run'`)
+        );
+      }
+
+      // ✅ ЗАЩИТА ОТ SQL-ИНЪЕКЦИЙ
+      validateSqlCommand(command, params);
+
+      // ✅ ПАРАМЕТРИЗОВАННЫЕ ЗАПРОСЫ (уже есть)
+      db[method](command, params, (err, result) => {
+        if (err) {
+          logger.error(`Error executing query: ${command}`, err);
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    } catch (validationError) {
+      logger.error(`SQL validation failed for: ${command}`, validationError);
+      reject(validationError);
+    }
   });
 };
 

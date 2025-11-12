@@ -8,6 +8,7 @@ const { socketManager } = require("./socket/socketManager");
 const { socketEngine } = require("./socket/socketEngine");
 const { initDatabase } = require("./database/sqlite3/initDatabase");
 const { setupGracefulShutdown } = require("./gracefulShutdown");
+const { initializeAllTables } = require("./database/sqlite3/utils/tableInitializer");
 
 const server = http.createServer((req, res) => {
   if (req.url === "/stats" && req.method === "GET") {
@@ -27,8 +28,8 @@ const server = http.createServer((req, res) => {
 const { host, port } = config.server;
 
 const startServer = async () => {
-  // ИНИЦИАЛИЗИРУЕМ БАЗУ ДАННЫХ
   const dbSuccess = await initDatabase();
+  await initializeAllTables()
   if (!dbSuccess) {
     throw new Error("Database initialization failed");
   }
@@ -45,7 +46,6 @@ const startServer = async () => {
           const io = socketManager.initSocket(server);
           socketEngine(io);
           logger.info("Socket.IO engine initialized successfully");
-          // ✅ НАСТРАИВАЕМ GRACEFUL SHUTDOWN ПОСЛЕ УСПЕШНОГО ЗАПУСКА
           setupGracefulShutdown(server, io);
           resolve(); // ✅ Успех только после инициализации сокетов
         } catch (error) {

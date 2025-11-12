@@ -12,14 +12,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     logger.info("✅ Connected to SQLite database");
     db.run("PRAGMA foreign_keys = ON");
-    db.run("PRAGMA journal_mode = WAL");
+    //! db.run("PRAGMA journal_mode = WAL"); // ❌ ОТКЛЮЧЕНО (для разработки)
     db.run("PRAGMA busy_timeout = 5000");
+    db.run("PRAGMA synchronous = NORMAL"); // Баланс производительности/надежности
+    db.run("PRAGMA cache_size = -64000"); // Кэш 64MB
   }
 });
 
 const initDatabase = async () => {
   try {
-    // await createTables();
     logger.info("✅ Database initialization completed");
     return true;
   } catch (error) {
