@@ -8,7 +8,9 @@ const { socketManager } = require("./socket/socketManager");
 const { socketEngine } = require("./socket/socketEngine");
 const { initDatabase } = require("./database/sqlite3/initDatabase");
 const { setupGracefulShutdown } = require("./gracefulShutdown");
-const { initializeAllTables } = require("./database/sqlite3/utils/tableInitializer");
+const {
+  initializeAllTables,
+} = require("./database/sqlite3/utils/tableInitializer");
 
 const server = http.createServer((req, res) => {
   if (req.url === "/stats" && req.method === "GET") {
@@ -29,7 +31,9 @@ const { host, port } = config.server;
 
 const startServer = async () => {
   const dbSuccess = await initDatabase();
-  await initializeAllTables()
+  if (!dbSuccess) throw new Error("Database initialization failed");
+
+  await initializeAllTables();
   if (!dbSuccess) {
     throw new Error("Database initialization failed");
   }

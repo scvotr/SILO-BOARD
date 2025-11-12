@@ -23,7 +23,9 @@ const executeTableCreation = async (
     }
     if (allowDrop) {
       logger.warn(`Dropping table ${tableName}.`);
+      await execSql("PRAGMA foreign_keys = OFF", []);
       await execSql(`DROP TABLE IF EXISTS ${tableName}`, []);
+      await execSql("PRAGMA foreign_keys = ON", []);
     }
     await execSql(createTableQuery, []);
   } catch (error) {
