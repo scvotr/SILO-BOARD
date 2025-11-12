@@ -52,3 +52,4 @@ Thumbs.db
 *.db-shm
 *.db-wal
 *copy.js
+*.txt
