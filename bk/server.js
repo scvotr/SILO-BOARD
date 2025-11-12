@@ -11,19 +11,18 @@ const { setupGracefulShutdown } = require("./gracefulShutdown");
 const {
   initializeAllTables,
 } = require("./database/sqlite3/utils/tableInitializer");
+const { routingEngine } = require("./routingHandlers/routingEngine");
+const {
+  handleRequestErrors,
+} = require("./routingHandlers/handleRequestErrors");
+const { corsMiddleware } = require("./middleware/corsMiddleware");
 
-const server = http.createServer((req, res) => {
-  if (req.url === "/stats" && req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        server: "running",
-        sockets: socketManager.getStats(),
-      })
-    );
-  } else {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Hello World!");
+const server = http.createServer(async (req, res) => {
+  corsMiddleware(req, res);
+  try {
+    await routingEngine(req, res);
+  } catch (error) {
+    await handleRequestErrors(res, error);
   }
 });
 
@@ -69,3 +68,35 @@ startServer().catch((error) => {
   logger.error("Failed to start server:", error);
   serverErrorHandler(error, port, host);
 });
+
+
+
+
+
+
+
+
+
+// if (req.url === "/stats" && req.method === "GET") {
+//   res.writeHead(200, { "Content-Type": "application/json" });
+//   res.end(
+//     JSON.stringify({
+//       server: "running",
+//       sockets: socketManager.getStats(),
+//     })
+//   );
+// } else {
+//   res.writeHead(200, { "Content-Type": "text/plain" });
+//   res.end("Hello World!");
+// }
+
+// res.setHeader("Access-Control-Allow-Origin", "*");
+// res.setHeader(
+//   "Access-Control-Allow-Methods",
+//   "GET, POST, PUT, DELETE, OPTIONS"
+// );
+// res.setHeader(
+//   "Access-Control-Allow-Headers",
+//   "Content-Type, Authorization, X-Requested-With"
+// );
+// res.setHeader("Access-Control-Max-Age", "86400");

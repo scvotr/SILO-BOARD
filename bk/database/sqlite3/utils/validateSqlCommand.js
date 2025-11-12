@@ -6,10 +6,10 @@ const { logger } = require("../../../utils/logger");
 const validateSqlCommand = (command, params) => {
   // Проверяем что команда не содержит опасных конструкций
   const dangerousPatterns = [
-    /;/g, // multiple statements
-    /--/g, // SQL comments
-    /\/\*.*\*\//g, // block comments
     // !---------------
+    // /;/g, // multiple statements
+    // /--/g, // SQL comments
+    // /\/\*.*\*\//g, // block comments
     // /DROP\s+TABLE/i,
     // /DELETE\s+FROM/i,
     // /UPDATE\s+.+\s+SET/i,

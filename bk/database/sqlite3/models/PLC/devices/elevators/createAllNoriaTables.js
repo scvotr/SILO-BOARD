@@ -4,7 +4,7 @@ const { logger } = require("../../../../../../utils/logger");
 
 const { createNoriaDeviceEventsTable, createNoriaPiwHistoryTable } = require("./elevatorsTablesConfig");
 
-const createAllNoriaTables = async (allowDrop = true, forceDrop = false) => {
+const createAllNoriaTables = async (allowDrop = false, forceDrop = false) => {
   try {
     const startTime = Date.now();
     logger.info(
