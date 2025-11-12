@@ -16,9 +16,12 @@ const {
   handleRequestErrors,
 } = require("./routingHandlers/handleRequestErrors");
 const { corsMiddleware } = require("./middleware/corsMiddleware");
+const { requestLogger } = require("./middleware/requestLogger");
 
 const server = http.createServer(async (req, res) => {
+  requestLogger(req, res, () => {});
   corsMiddleware(req, res);
+  
   try {
     await routingEngine(req, res);
   } catch (error) {
@@ -68,14 +71,6 @@ startServer().catch((error) => {
   logger.error("Failed to start server:", error);
   serverErrorHandler(error, port, host);
 });
-
-
-
-
-
-
-
-
 
 // if (req.url === "/stats" && req.method === "GET") {
 //   res.writeHead(200, { "Content-Type": "application/json" });

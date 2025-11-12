@@ -1,39 +1,26 @@
+// utils/logger.js
 "use strict";
 
 const winston = require("winston");
 
 /**
  * Кастомные уровни логирования
- * @namespace
- * @property {Object} levels - Уровни логирования (0 - высший приоритет)
- * @property {number} levels.error - Критические ошибки (0)
- * @property {number} levels.warn - Предупреждения (1)
- * @property {number} levels.info - Информационные сообщения (2)
- * @property {number} levels.infoAuth - Успешная аутентификация (3)
- * @property {number} levels.warnAuth - Подозрительная активность (4)
- * @property {number} levels.errorAuth - Ошибки аутентификации (5)
- * @property {Object} colors - Цвета для консоли
- * @property {string} colors.error - 🔴 Красный для ошибок
- * @property {string} colors.warn - 🟡 Желтый для предупреждений
- * @property {string} colors.info - 🟢 Зеленый для информации
- * @property {string} colors.infoAuth - 🔵 Синий для аутентификации
- * @property {string} colors.warnAuth - 🟠 Оранжевый для предупреждений аутентификации
- * @property {string} colors.errorAuth - 🟣 Пурпурный для ошибок аутентификации
  */
-
 const customLevels = {
   levels: {
     error: 0,
     warn: 1,
     info: 2,
-    infoAuth: 3,
-    warnAuth: 4,
-    errorAuth: 5,
+    httpReq: 3, // ← Уровень для HTTP запросов
+    infoAuth: 4,
+    warnAuth: 5,
+    errorAuth: 6,
   },
   colors: {
     error: "red",
     warn: "yellow",
     info: "green",
+    httpReq: "cyan", // ← Цвет для HTTP запросов
     infoAuth: "blue",
     warnAuth: "orange",
     errorAuth: "magenta",
@@ -41,28 +28,23 @@ const customLevels = {
 };
 
 winston.addColors(customLevels.colors);
+
 /**
  * Основной логгер приложения
- * @class
- * @type {winston.Logger}
  */
 const logger = winston.createLogger({
   levels: customLevels.levels,
-  // Убираем конфликтующие форматы
   format: winston.format.combine(
     winston.format.timestamp({
       format: "YYYY-MM-DD HH:mm:ss",
     }),
     winston.format.errors({ stack: true }),
-    winston.format.json() // Либо JSON, либо простой текст - выбираем один
+    winston.format.json()
   ),
   transports: [
-    /**
-     * Транспорт для консоли - цветной вывод
-     * @type {winston.transports.Console}
-     */
+    // Консоль - видим от httpReq и ВЫШЕ (httpReq, info, warn, error)
     new winston.transports.Console({
-      level: "info",
+      level: "httpReq",
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.timestamp({
@@ -73,52 +55,35 @@ const logger = winston.createLogger({
         )
       ),
     }),
-    /**
-     * Транспорт для файла ошибок
-     * @type {winston.transports.File}
-     */
+
+    // ⬇️ HTTP запросы - ТОЛЬКО уровень httpReq
+    new winston.transports.File({
+      filename: "logs/httpReq.log",
+      level: "httpReq", // ✅ ТОЛЬКО httpReq
+    }),
+
+    // ⬇️ Ошибки - ТОЛЬКО error и выше
     new winston.transports.File({
       filename: "logs/error.log",
-      level: "error",
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
+      level: "error", // ✅ ТОЛЬКО error
     }),
-    /**
-     * Транспорт для ошибок аутентификации
-     * @type {winston.transports.File}
-     */
+
+    // ⬇️ Auth ошибки
     new winston.transports.File({
       filename: "logs/errorAuth.log",
-      level: "errorAuth",
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
+      level: "errorAuth", // ✅ ТОЛЬКО errorAuth
     }),
-    /**
-     * Транспорт для предупреждений аутентификации
-     * @type {winston.transports.File}
-     */
+
+    // ⬇️ Auth предупреждения
     new winston.transports.File({
       filename: "logs/warnAuth.log",
-      level: "warnAuth",
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
+      level: "warnAuth", // ✅ ТОЛЬКО warnAuth
     }),
-    /**
-     * Транспорт для всех логов
-     * @type {winston.transports.File}
-     */
+
+    // ⬇️ Combined - ВСЕ КРОМЕ httpReq
     new winston.transports.File({
       filename: "logs/combined.log",
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
+      level: "info", // ✅ info, warn, error (но НЕ httpReq)
     }),
   ],
 });
@@ -134,6 +99,12 @@ logger.warnAuth = function (message, meta) {
 
 logger.errorAuth = function (message, meta) {
   this.log("errorAuth", message, meta);
+};
+
+// ⬇️ ИСПРАВЛЕННЫЙ метод для HTTP запросов
+logger.httpReq = function (message, meta) {
+  // ← Теперь httpReq
+  this.log("httpReq", message, meta); 
 };
 
 module.exports = { logger };
