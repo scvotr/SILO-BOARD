@@ -5,7 +5,7 @@ const { logger } = require("../utils/logger")
 const handleRequestErrors = async (res, error) => {
   // 1. Проверяем, не отправлен ли уже ответ
   if (res.headersSent) {
-    console.error('Headers already sent, cannot handle error:', error.message)
+    logger.error('Headers already sent, cannot handle error:', error.message)
     return
   }
 
@@ -18,7 +18,7 @@ const handleRequestErrors = async (res, error) => {
   
   console.error('Произошла ошибка:', error.message)
   if (error.stack) {
-    console.error('Stack trace:', error.stack)
+    logger.error('Stack trace:', error.stack)
   }
 
   // 3. Определяем статус код
@@ -46,9 +46,9 @@ const handleRequestErrors = async (res, error) => {
     }
     
     res.end(JSON.stringify(errorResponse))
-  } catch (sendError) {
+  } catch (error) {
     // Если даже отправка ошибки не удалась
-    console.error('Failed to send error response:', sendError)
+    logger.error('Failed to send error response:', error)
   }
 }
 

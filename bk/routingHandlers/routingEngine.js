@@ -3,17 +3,28 @@
 
 const { handleNotFound } = require("./handleNotFound");
 const { handleOptionsRequest } = require("./handleOptionsRequest");
-const { routeHandlers } = require("./routeHandlers");
+const { routesHandlers } = require("./routesHandlers");
 const { logger } = require("../utils/logger"); // ← Импортируем логер
+
+const getClientIp = (req) => {
+  try {
+    const xff = req.headers["x-forwarded-for"];
+    if (xff) {
+      const firstIp =
+        typeof xff === "string" ? xff.split(",")[0].trim() : xff[0];
+      return firstIp || "unknown";
+    }
+    return req.headers["x-real-ip"] || req.socket?.remoteAddress || "unknown";
+  } catch (error) {
+    logger.warn("Failed to get client IP", { error: error.message });
+    return "unknown";
+  }
+};
 
 const routingEngine = async (req, res) => {
   const { url, method } = req;
 
-  // Получаем IP для логирования
-  const clientIP =
-    req.headers["x-forwarded-for"] ||
-    req.headers["x-real-ip"] ||
-    req.socket.remoteAddress;
+  const clientIP = getClientIp(req);
 
   if (method === "OPTIONS") {
     // Логируем OPTIONS запрос
@@ -22,13 +33,13 @@ const routingEngine = async (req, res) => {
       ip: clientIP,
       url: url,
     });
-
     await handleOptionsRequest(req, res);
     return;
   }
 
   let routeHandled = false;
-  for (const { prefix, handler } of routeHandlers) {
+
+  for (const { prefix, handler } of routesHandlers) {
     if (url.startsWith(prefix)) {
       // Логируем НАЙДЕННЫЙ маршрут
       logger.httpReq(`🎯 ROUTE_MATCH: ${method} ${url}`, {
@@ -55,7 +66,6 @@ const routingEngine = async (req, res) => {
       url: url,
       availablePrefixes: routeHandlers.map((r) => r.prefix),
     });
-
     await handleNotFound(req, res);
   }
 };
