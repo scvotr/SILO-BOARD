@@ -1,10 +1,8 @@
-// routing/routingEngine.js
 "use strict";
 
 const { handleNotFound } = require("./handleNotFound");
-const { handleOptionsRequest } = require("./handleOptionsRequest");
 const { routesHandlers } = require("./routesHandlers");
-const { logger } = require("../utils/logger"); // ← Импортируем логер
+const { logger } = require("../utils/logger");
 
 const getClientIp = (req) => {
   try {
@@ -26,22 +24,10 @@ const routingEngine = async (req, res) => {
 
   const clientIP = getClientIp(req);
 
-  if (method === "OPTIONS") {
-    // Логируем OPTIONS запрос
-    logger.httpReq(`⚡ OPTIONS: ${url}`, {
-      type: "options_request",
-      ip: clientIP,
-      url: url,
-    });
-    await handleOptionsRequest(req, res);
-    return;
-  }
-
   let routeHandled = false;
 
   for (const { prefix, handler } of routesHandlers) {
     if (url.startsWith(prefix)) {
-      // Логируем НАЙДЕННЫЙ маршрут
       logger.httpReq(`🎯 ROUTE_MATCH: ${method} ${url}`, {
         type: "route_match",
         ip: clientIP,
@@ -58,7 +44,6 @@ const routingEngine = async (req, res) => {
   }
 
   if (!routeHandled) {
-    // Логируем НЕНАЙДЕННЫЙ маршрут
     logger.httpReq(`❌ ROUTE_NOT_FOUND: ${method} ${url}`, {
       type: "route_not_found",
       ip: clientIP,

@@ -1,8 +1,8 @@
 "use strict";
 
-const { adminRoutesHandle } = require("../routeHandlers/admin/adminRoutesHandle");
-const { authRoutesHandle } = require("../routeHandlers/auth/authRoutesHandle");
-const { devicesRoutesHandle } = require("../routeHandlers/devices/devicesRoutesHandle");
+const { adminRoutesHandle } = require("../routesHandlers/admin/adminRoutesHandle");
+const { authRoutesHandle } = require("../routesHandlers/auth/authRoutesHandle");
+const { devicesRoutesHandle } = require("../routesHandlers/devices/devicesRoutesHandle");
 
 const routesHandlers = [
   { prefix: "/auth", handler: authRoutesHandle },

@@ -19,9 +19,15 @@ const { corsMiddleware } = require("./middleware/corsMiddleware");
 const { requestLogger } = require("./middleware/requestLogger");
 
 const server = http.createServer(async (req, res) => {
-  requestLogger(req, res, () => {});
-  corsMiddleware(req, res);
+  // 1. 🔒 CORS СРАЗУ и проверяем OPTIONS
+  const isOptionsHandled = corsMiddleware(req, res);
+  // 2. Если это OPTIONS - прерываем цепочку
+  if (isOptionsHandled) {
+    return; // OPTIONS уже обработан, выходим
+  }
   
+  await requestLogger(req, res, () => {});
+
   try {
     await routingEngine(req, res);
   } catch (error) {
@@ -71,27 +77,3 @@ startServer().catch((error) => {
   logger.error("Failed to start server:", error);
   serverErrorHandler(error, port, host);
 });
-
-// if (req.url === "/stats" && req.method === "GET") {
-//   res.writeHead(200, { "Content-Type": "application/json" });
-//   res.end(
-//     JSON.stringify({
-//       server: "running",
-//       sockets: socketManager.getStats(),
-//     })
-//   );
-// } else {
-//   res.writeHead(200, { "Content-Type": "text/plain" });
-//   res.end("Hello World!");
-// }
-
-// res.setHeader("Access-Control-Allow-Origin", "*");
-// res.setHeader(
-//   "Access-Control-Allow-Methods",
-//   "GET, POST, PUT, DELETE, OPTIONS"
-// );
-// res.setHeader(
-//   "Access-Control-Allow-Headers",
-//   "Content-Type, Authorization, X-Requested-With"
-// );
-// res.setHeader("Access-Control-Max-Age", "86400");

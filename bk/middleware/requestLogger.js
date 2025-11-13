@@ -5,7 +5,7 @@ const { logger } = require("../utils/logger");
 /**
  * Middleware для логирования HTTP запросов
  */
-const requestLogger = (req, res, next) => {
+const requestLogger = async (req, res, next) => {
   const startTime = Date.now();
   const { method, url, socket, headers } = req;
 
