@@ -4,7 +4,7 @@ class DevicesController {
   async testResponse(req, res) {
     const { method } = req;
 
-    if (method === "GET") {
+    if (method === "POST" || method === "GET") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
@@ -21,7 +21,7 @@ class DevicesController {
       res.end(
         JSON.stringify({
           error: "Method not allowed",
-          allowedMethods: ["GET"],
+          allowedMethods: ["GET, POST"],
         })
       );
     }
