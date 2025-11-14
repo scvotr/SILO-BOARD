@@ -32,7 +32,7 @@ const createRoutesHandler = (routes, handlerName) => {
     try {
       const routeHandler = routes[url];
       if (routeHandler) {
-        if (method === "POST") {
+        if (method === "POST" || method === "GET") {
           await routeHandler(req, res); // ✅ Маршрут+POST
         } else {
           await handleNotFound(req, res); // ✅ Маршрут+неPOST
