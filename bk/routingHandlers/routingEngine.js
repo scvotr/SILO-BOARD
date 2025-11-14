@@ -49,7 +49,7 @@ const routingEngine = async (req, res) => {
       ip: clientIP,
       method: method,
       url: url,
-      availablePrefixes: routeHandlers.map((r) => r.prefix),
+      availablePrefixes: routesHandlers.map((r) => r.prefix),
     });
     await handleNotFound(req, res);
   }
