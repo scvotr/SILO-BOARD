@@ -3,6 +3,8 @@
 const { handleNotFound } = require("./handleNotFound");
 const { routesHandlers } = require("./routesHandlers");
 const { logger } = require("../utils/logger");
+const { routeCache } = require("../middleware/routeCache");
+const { protectRouteJWT } = require("../JWT/protectRouteJWT");
 
 const getClientIp = (req) => {
   try {
@@ -26,7 +28,14 @@ const routingEngine = async (req, res) => {
 
   let routeHandled = false;
 
-  for (const { prefix, handler } of routesHandlers) {
+  for (const routeConfig of routesHandlers) {
+    const {
+      prefix,
+      handler,
+      cache: cacheConfig,
+      protected: isProtected,
+    } = routeConfig;
+
     if (url.startsWith(prefix)) {
       logger.httpReq(`🎯 ROUTE_MATCH: ${method} ${url}`, {
         type: "route_match",
@@ -35,9 +44,24 @@ const routingEngine = async (req, res) => {
         url: url,
         prefix: prefix,
         handler: handler.name || "anonymous",
+        cached: cacheConfig && cacheConfig.enabled,
+        protected: isProtected || false,
       });
 
-      await handler(req, res);
+      const finalHandler = isProtected ? protectRouteJWT(handler) : handler;
+
+      // Apply caching middleware if enabled for this route
+      if (cacheConfig && cacheConfig.enabled) {
+        await routeCache(cacheConfig.ttl)(req, res, async () => {
+          // await handler(req, res);
+          await finalHandler(req, res);
+        });
+      } else {
+        // Execute handler directly if no caching
+        // await handler(req, res);
+        await finalHandler(req, res);
+      }
+
       routeHandled = true;
       break;
     }

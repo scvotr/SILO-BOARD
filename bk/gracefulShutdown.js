@@ -1,6 +1,7 @@
 "use strict";
 
 const { closeDatabase } = require("./database/sqlite3/utils/closeDatabase");
+const UserSocketPool = require("./socket/JWT/UserSocketPool");
 const { logger } = require("./utils/logger");
 
 const setupGracefulShutdown = (httpServer, socketIO) => {
@@ -24,7 +25,12 @@ const setupGracefulShutdown = (httpServer, socketIO) => {
           message: "Server is restarting",
         });
         // !--------------------
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        logger.info("Clearing UserSocketPool...");
+        await UserSocketPool.clear();
+        logger.info("✅ UserSocketPool cleared");
+
         await socketIO.close();
         logger.info("✅ Socket.IO server closed");
       } else {

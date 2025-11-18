@@ -30,7 +30,10 @@ const createRoutesHandler = (routes, handlerName) => {
     const { url, method } = req;
 
     try {
-      const routeHandler = routes[url];
+      // ✅ ИСПРАВЛЕНИЕ: Убираем query параметры из URL
+      const cleanUrl = url.split("?")[0];
+
+      const routeHandler = routes[cleanUrl];
       if (routeHandler) {
         if (method === "POST" || method === "GET") {
           await routeHandler(req, res); // ✅ Маршрут+POST

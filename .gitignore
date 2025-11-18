@@ -51,6 +51,6 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
-*copy.js
+*copy*.js
 *.txt
 *.qwen/
